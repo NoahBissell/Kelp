@@ -1,0 +1,55 @@
+#pragma kernel Simulate
+
+struct Point
+{
+    float2 position, prevPosition;
+    int locked;
+};
+
+struct Stick
+{
+    int pointAIdx, pointBIdx;
+    float length;
+};
+
+float gravity;
+float deltaTime;
+int numPoints;
+int numSticks;
+RWStructuredBuffer<Point> pointsBuffer;
+StructuredBuffer<Stick> sticks;
+
+
+[numthreads(64,1,1)]
+void UpdatePoints(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= numPoints) return;
+
+    Point p = pointsBuffer[id.x];
+    if (p.locked == 1) return;
+
+    float2 positionBeforeUpdate = p.position;
+    p.position += (p.position - p.prevPosition);
+    p.position += float2(0, -1) * gravity * deltaTime * deltaTime;
+    p.prevPosition = positionBeforeUpdate;
+
+    pointsBuffer[id.x] = p;
+}
+
+[numthreads(64,1,1)]
+void UpdateSticks(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= numSticks) return;
+    
+    Stick s = sticks[id.x];
+    Point a = pointsBuffer[s.pointAIdx];
+    Point b = pointsBuffer[s.pointBIdx];
+    float2 stickCenter = (a.position + b.position) * 0.5f;
+    float2 stickDir = normalize(b.position - a.position);
+
+    a.position += stickCenter - stickDir * s.length * 0.5f * a.locked - a.position;
+    b.position += stickCenter + stickDir * s.length * 0.5f * b.locked - b.position;
+
+    pointsBuffer[s.pointAIdx] = a;
+    pointsBuffer[s.pointBIdx] = b;
+}

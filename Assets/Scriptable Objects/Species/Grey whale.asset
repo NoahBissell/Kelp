@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 908a1c707af24ecb88d1dc700a7aea83, type: 3}
+  m_Name: Grey whale
+  m_EditorClassIdentifier: Assembly-CSharp::Species
+  displayName: Grey whale
+  scientificName: Eschrichtius robustus
+  description: One of the largest animals found along the Pacific coast, the gray
+    whale is known for its long annual migrations between Arctic feeding grounds
+    and warmer breeding waters. Its mottled gray skin is often marked by barnacles
+    and scars accumulated throughout its life.
+  depthLayer: 
+  behavior: Moves slowly and deliberately through the environment, often following
+    a steady course. Occasionally surfaces to breathe before descending.
