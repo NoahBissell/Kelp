@@ -1,8 +1,8 @@
-#pragma kernel Simulate
-
+#pragma kernel UpdatePoints
+#pragma kernel UpdateSticksGroup
 struct Point
 {
-    float2 position, prevPosition;
+    float3 position, prevPosition;
     int locked;
 };
 
@@ -17,7 +17,10 @@ float deltaTime;
 int numPoints;
 int numSticks;
 RWStructuredBuffer<Point> pointsBuffer;
-StructuredBuffer<Stick> sticks;
+StructuredBuffer<Stick> sticksBuffer;
+RWStructuredBuffer<float3> ropePositions;
+
+int firstGroup;
 
 
 [numthreads(64,1,1)]
@@ -28,27 +31,31 @@ void UpdatePoints(uint3 id : SV_DispatchThreadID)
     Point p = pointsBuffer[id.x];
     if (p.locked == 1) return;
 
-    float2 positionBeforeUpdate = p.position;
+    float3 positionBeforeUpdate = p.position;
     p.position += (p.position - p.prevPosition);
-    p.position += float2(0, -1) * gravity * deltaTime * deltaTime;
+    p.position += float3(0, -1, 0) * gravity * deltaTime * deltaTime;
     p.prevPosition = positionBeforeUpdate;
 
     pointsBuffer[id.x] = p;
 }
 
 [numthreads(64,1,1)]
-void UpdateSticks(uint3 id : SV_DispatchThreadID)
+void UpdateSticksGroup(uint3 id : SV_DispatchThreadID)
 {
-    if (id.x >= numSticks) return;
-    
-    Stick s = sticks[id.x];
+    int index = 2 * id.x + firstGroup;
+
+    if (index >= numSticks) return;
+
+    Stick s = sticksBuffer[index];
     Point a = pointsBuffer[s.pointAIdx];
     Point b = pointsBuffer[s.pointBIdx];
-    float2 stickCenter = (a.position + b.position) * 0.5f;
-    float2 stickDir = normalize(b.position - a.position);
+    float3 stickCenter = (a.position + b.position) * 0.5f;
+    float3 stickDir = normalize(b.position - a.position);
 
-    a.position += stickCenter - stickDir * s.length * 0.5f * a.locked - a.position;
-    b.position += stickCenter + stickDir * s.length * 0.5f * b.locked - b.position;
+    if(a.locked == 0)
+        a.position = stickCenter - stickDir * s.length * 0.5f;
+    if(b.locked == 0)
+        b.position = stickCenter + stickDir * s.length * 0.5f;
 
     pointsBuffer[s.pointAIdx] = a;
     pointsBuffer[s.pointBIdx] = b;

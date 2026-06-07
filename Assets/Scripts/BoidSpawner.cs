@@ -26,11 +26,8 @@ public class BoidSpawner : MonoBehaviour
             Quaternion rotation = Random.rotation;
 
             BoidGO b;
-            if (Application.isPlaying)
-            {
-                b = Instantiate(boidPrefab, position, rotation);
-            }
-            else
+            #if UNITY_EDITOR
+            if(!Application.isPlaying)
             {
                 b = PrefabUtility.InstantiatePrefab(boidPrefab) as BoidGO;
                 if (b == null)
@@ -39,6 +36,15 @@ public class BoidSpawner : MonoBehaviour
                 }
                 b.transform.position = position;
                 b.transform.rotation = rotation;
+            }
+            #endif
+            if (Application.isPlaying)
+            {
+                b = Instantiate(boidPrefab, position, rotation);
+            }
+            else
+            {
+                return new BoidGO[0];
             }
 
             b.SetSpawnIndex(index);
