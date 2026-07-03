@@ -16,9 +16,10 @@ float gravity;
 float deltaTime;
 int numPoints;
 int numSticks;
-RWStructuredBuffer<Point> pointsBuffer;
-StructuredBuffer<Stick> sticksBuffer;
+RWStructuredBuffer<Point> ropePoints;
+StructuredBuffer<Stick> ropeSticks;
 RWStructuredBuffer<float3> ropePositions;
+StructuredBuffer<float3> _Positions;
 
 int firstGroup;
 
@@ -28,7 +29,7 @@ void UpdatePoints(uint3 id : SV_DispatchThreadID)
 {
     if (id.x >= numPoints) return;
 
-    Point p = pointsBuffer[id.x];
+    Point p = ropePoints[id.x];
     if (p.locked == 1) return;
 
     float3 positionBeforeUpdate = p.position;
@@ -36,7 +37,7 @@ void UpdatePoints(uint3 id : SV_DispatchThreadID)
     p.position += float3(0, -1, 0) * gravity * deltaTime * deltaTime;
     p.prevPosition = positionBeforeUpdate;
 
-    pointsBuffer[id.x] = p;
+    ropePoints[id.x] = p;
 }
 
 [numthreads(64,1,1)]
@@ -46,9 +47,9 @@ void UpdateSticksGroup(uint3 id : SV_DispatchThreadID)
 
     if (index >= numSticks) return;
 
-    Stick s = sticksBuffer[index];
-    Point a = pointsBuffer[s.pointAIdx];
-    Point b = pointsBuffer[s.pointBIdx];
+    Stick s = ropeSticks[index];
+    Point a = ropePoints[s.pointAIdx];
+    Point b = ropePoints[s.pointBIdx];
     float3 stickCenter = (a.position + b.position) * 0.5f;
     float3 stickDir = normalize(b.position - a.position);
 
@@ -57,6 +58,9 @@ void UpdateSticksGroup(uint3 id : SV_DispatchThreadID)
     if(b.locked == 0)
         b.position = stickCenter + stickDir * s.length * 0.5f;
 
-    pointsBuffer[s.pointAIdx] = a;
-    pointsBuffer[s.pointBIdx] = b;
+    ropePoints[s.pointAIdx] = a;
+    ropePoints[s.pointBIdx] = b;
+
+    ropePositions[s.pointAIdx] = a.position;
+    ropePositions[s.pointBIdx] = b.position;
 }
