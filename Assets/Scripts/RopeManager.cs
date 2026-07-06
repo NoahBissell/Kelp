@@ -6,6 +6,8 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering.HighDefinition;
+using UnityEngine.Serialization;
+using Random = UnityEngine.Random;
 
 public class RopeManager : MonoBehaviour
 {
@@ -30,11 +32,14 @@ public class RopeManager : MonoBehaviour
     }
 
     public float gravity;
-    public int numPoints;
+    public int numRopePoints;
+    public int numRopes;
+    public float radius;
 
     public Interactor interactor;
     public Point[] points;
     Stick[] sticks;
+    private Vector3[] ropePositions;
 
     public float stepSize;
 
@@ -48,57 +53,73 @@ public class RopeManager : MonoBehaviour
     ComputeBuffer pointsBuffer;
     ComputeBuffer posBuffer;
     ComputeBuffer sticksBuffer;
+    ComputeBuffer ropePosBuffer;
+
+    public Mesh mesh;
 
 
     private void Start()
     {
-        points = new Point[numPoints];
-        sticks = new Stick[numPoints - 1];
-
-        Vector3 pos = transform.position;
-        points[0] = new Point()
+        points = new Point[numRopePoints * numRopes];
+        sticks = new Stick[(numRopePoints - 1) * numRopes];
+        ropePositions = new Vector3[numRopes];
+        for (int ropeIdx = 0; ropeIdx < numRopes; ropeIdx++)
         {
-            position = pos,
-            prevPosition = pos,
-            locked = 1,
-        };
-        pos -= stepSize * dir.normalized;
-        for (int i = 1; i < numPoints; i++)
-        {
-            points[i] = new Point()
+            int startIdx = ropeIdx * numRopes;
+            Vector3 pos = transform.position + Random.insideUnitSphere * radius;
+            ropePositions[ropeIdx] = pos;
+            points[startIdx] = new Point()
             {
                 position = pos,
                 prevPosition = pos,
-                locked = i == numPoints - 1 ? 1 : 0,
+                locked = 1,
             };
-
-            sticks[i - 1] = new Stick()
-            {
-                pointAIdx = i - 1,
-                pointBIdx = i,
-                length = stepSize,
-            };
-            
             pos -= stepSize * dir.normalized;
+            for (int i = 1; i < numRopePoints; i++)
+            {
+                points[startIdx + i] = new Point()
+                {
+                    position = pos,
+                    prevPosition = pos,
+                    locked = i == numRopePoints - 1 ? 1 : 0,
+                };
+
+                sticks[startIdx + i - 1] = new Stick()
+                {
+                    pointAIdx = i - 1,
+                    pointBIdx = i,
+                    length = stepSize,
+                };
+
+                pos -= stepSize * dir.normalized;
+            }
         }
 
-        pointsBuffer = new ComputeBuffer(numPoints, sizeof(int) + sizeof(float) * 6);
-        sticksBuffer = new ComputeBuffer(numPoints - 1, sizeof(float) + sizeof(int) * 2);
-        posBuffer = new ComputeBuffer(numPoints, sizeof(float) * 3);
+        pointsBuffer = new ComputeBuffer(points.Length, sizeof(int) + sizeof(float) * 6);
+        sticksBuffer = new ComputeBuffer(sticks.Length, sizeof(float) + sizeof(int) * 2);
+        posBuffer = new ComputeBuffer(points.Length, sizeof(float) * 3);
+        ropePosBuffer = new ComputeBuffer(ropePositions.Length, sizeof(float) * 3);
 
         pointsBuffer.SetData(points);
         sticksBuffer.SetData(sticks);
-
-        cs.SetBuffer(0, "pointsBuffer", pointsBuffer);
-        cs.SetBuffer(1, "pointsBuffer", pointsBuffer);
-        cs.SetBuffer(1, "sticksBuffer", sticksBuffer);
+        ropePosBuffer.SetData(ropePositions);
+        
+        cs.SetBuffer(0, "_Positions", ropePosBuffer);
+        cs.SetBuffer(0, "ropePoints", pointsBuffer);
+        cs.SetBuffer(1, "ropePoints", pointsBuffer);
+        cs.SetBuffer(1, "ropeSticks", sticksBuffer);
         cs.SetBuffer(1, "ropePositions", posBuffer);
         cs.SetFloat("gravity", gravity);
-        cs.SetInt("numPoints", numPoints);
-        cs.SetInt("numSticks", numPoints - 1);
+        cs.SetInt("numPoints", numRopePoints);
+        cs.SetInt("numSticks", numRopePoints - 1);
 
         material.SetBuffer("_ropePositions", posBuffer);
+        material.SetBuffer("_Positions", ropePosBuffer);
+        material.SetInt("_numPoints", numRopePoints);
+        material.SetInt("_numRopes", numRopes);
     }
+    
+    
 
     private void Update()
     {
@@ -107,11 +128,12 @@ public class RopeManager : MonoBehaviour
         UpdateSticks();
 
         // pointsBuffer.GetData(points);
+        Graphics.DrawMeshInstancedProcedural(mesh, 0, material, new Bounds(transform.position, Vector3.one * radius), numRopes);
     }
 
     void UpdatePoints()
     {
-        cs.Dispatch(0, numPoints / 64 + 1, 1, 1);
+        cs.Dispatch(0, numRopePoints / 64 + 1, 1, 1);
     }
 
 
@@ -122,7 +144,7 @@ public class RopeManager : MonoBehaviour
             for (int i = 0; i < 2; i++)
             {
                 cs.SetInt("firstGroup", i);
-                cs.Dispatch(1, (numPoints - 1) / 2 / 64 + 1, 1, 1);
+                cs.Dispatch(1, (numRopePoints - 1) / 2 / 64 + 1, 1, 1);
             }
         }
     }
@@ -137,7 +159,7 @@ public class RopeManager : MonoBehaviour
     {
         if(!Application.isPlaying) return;
 
-        for (int i = 0; i < numPoints; i++)
+        for (int i = 0; i < numRopePoints; i++)
         {
             Gizmos.DrawSphere(points[i].position.xyz, 0.1f);
         }
