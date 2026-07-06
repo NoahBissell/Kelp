@@ -116,7 +116,7 @@ Material:
     - _ZTestTransparent: 4
     - _ZWrite: 1
     m_Colors:
-    - _AvoidancePos: {r: -273.71616, g: -74.9918, b: -265.05878, a: 0}
+    - _AvoidancePos: {r: -639.8658, g: -33.827915, b: -115.02726, a: 0}
     - _DoubleSidedConstants: {r: 1, g: 1, b: -1, a: 0}
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
     - _Lean: {r: -50, g: -50, b: 0, a: 0}
