@@ -127,7 +127,7 @@ public class RopeManager : MonoBehaviour
         UpdatePoints();
         UpdateSticks();
 
-        // pointsBuffer.GetData(points);
+        pointsBuffer.GetData(points);
         Graphics.DrawMeshInstancedProcedural(mesh, 0, material, new Bounds(transform.position, Vector3.one * radius), numRopes);
     }
 
