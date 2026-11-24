@@ -84,9 +84,9 @@ Material:
     - _ReceivesSSR: 1
     - _ReceivesSSRTransparent: 0
     - _RefractionModel: 0
-    - _RenderLeaf: 1.09
+    - _RenderLeaf: 1.01
     - _RenderQueueType: 1
-    - _RenderStalk: 1.45
+    - _RenderStalk: 2.73
     - _RequireSplitLighting: 0
     - _SampleScale: 750
     - _Speed: 0.02
@@ -125,6 +125,7 @@ Material:
     - _DoubleSidedConstants: {r: 1, g: 1, b: 1, a: 0}
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
     - _Lean: {r: -50, g: -50, b: 0, a: 0}
+    - _Noise_offset: {r: 0, g: 0, b: 0, a: 0}
     - _SampleOffset: {r: 0, g: 0, b: 0, a: 0}
     - _Vector3: {r: 272.4, g: 1, b: 430.64, a: 0}
     - _WindNoiseContrast: {r: 0, g: 1, b: 0, a: 0}

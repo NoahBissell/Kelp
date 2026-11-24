@@ -49,6 +49,10 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - _LeafTex:
+        m_Texture: {fileID: 2800000, guid: d24ad6f470321f540b46f4e98aa1b6db, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _Texture2D:
         m_Texture: {fileID: 2800000, guid: 686d58a3cbff67f439b5974d6d584838, type: 3}
         m_Scale: {x: 1, y: 1}
@@ -71,7 +75,7 @@ Material:
     - _AlphaCutoffEnable: 1
     - _AlphaDstBlend: 0
     - _AlphaSrcBlend: 1
-    - _Amp: 1
+    - _Amp: 0.39
     - _BlendMode: 0
     - _ConservativeDepthOffsetEnable: 0
     - _CullMode: 0
@@ -87,8 +91,10 @@ Material:
     - _ExcludeFromTUAndAA: 0
     - _Float: -2.16
     - _Float_1: 1000000
+    - _Freq: 0.29
     - _MaterialID: 1
     - _MaterialTypeMask: 2
+    - _NoiseScale: 2
     - _OpaqueCullMode: 2
     - _PerPixelSorting: 0
     - _RayTracing: 0
@@ -125,6 +131,7 @@ Material:
     - _ZTestTransparent: 4
     - _ZWrite: 1
     m_Colors:
+    - _Color: {r: 0.54776907, g: 0.5660378, b: 0.14150944, a: 1}
     - _DoubleSidedConstants: {r: 1, g: 1, b: 1, a: 0}
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
     - _SampleOffset: {r: 0, g: 0, b: 0, a: 0}
